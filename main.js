@@ -7,7 +7,7 @@ let bottomPadding = 50;
 let sidePadding = 50;
 let points = [];
 let fontRegular;
-let bgColor = "#ffadc7";
+let bgColor = "#D7ADD1";
 
 function preload() {
     table = loadTable("data.csv", "csv", "header");
@@ -84,7 +84,7 @@ function draw() {
     text("12 PM", width / 2, height - 30);
     text("12 AM", sidePadding, height - 30);
 
-    // saveCanvas('output1.png');
+    // saveCanvas("output1.png");
 }
 
 function aggregateByHour(tableObj) {
