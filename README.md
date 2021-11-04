@@ -1,6 +1,6 @@
 # Feltron graphs
 
-![feltron graph](feltron-table.png)
+<!-- ![feltron graph](feltron-table.png) -->
 
 ## This is my version made in P5js
 
