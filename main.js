@@ -10,98 +10,95 @@ let fontRegular;
 let bgColor = "#D7ADD1";
 
 function preload() {
-    table = loadTable("data.csv", "csv", "header");
-    fontRegular = loadFont("IBMPlexMono-Light.ttf");
+  table = loadTable("data.csv", "csv", "header");
+  fontRegular = loadFont("IBMPlexMono-Light.ttf");
 }
 
 function setup() {
-    createCanvas(1000, 400);
+  createCanvas(1000, 400);
 
-    noLoop();
+  noLoop();
 
-    tableObj = table.getObject();
+  tableObj = table.getObject();
 
-    aggData = aggregateByHour(tableObj);
+  aggData = aggregateByHour(tableObj);
 
-    // console.log(aggData);
+  // console.log(aggData);
 
-    maxCount = _.maxBy(aggData, "count").count;
-    minCount = _.minBy(aggData, "count").count;
+  maxCount = _.max(aggData);
+  minCount = _.min(aggData);
 
-    for (let i = 0; i < aggData.length; i++) {
-        let thisP = aggData[i];
-        let y = map(thisP.count, minCount, maxCount, height - bottomPadding, topPadding);
-        let x = map(thisP.hour, 0, 23, sidePadding, width - sidePadding);
-        let obj = { x, y, count: thisP.count };
-        points.push(obj);
-    }
+  for (let i = 0; i < aggData.length; i++) {
+    let thisP = aggData[i];
+    let y = map(thisP, minCount, maxCount, height - bottomPadding, topPadding);
+    let x = map(i, 0, 23, sidePadding, width - sidePadding);
+    let obj = { x, y };
+    points.push(obj);
+  }
 }
 
 function draw() {
-    background(bgColor);
+  background(bgColor);
 
-    noStroke();
+  noStroke();
 
-    fill("white");
+  fill("white");
 
-    beginShape(); // white background shape
+  beginShape(); // white background shape
 
-    vertex(sidePadding / 2, height - bottomPadding);
+  vertex(sidePadding / 2, height - bottomPadding);
 
-    for (let i = 0; i < points.length; i++) {
-        vertex(points[i].x, points[i].y);
+  for (let i = 0; i < points.length; i++) {
+    vertex(points[i].x, points[i].y);
+  }
+
+  vertex(width - sidePadding / 2, height - bottomPadding);
+
+  endShape();
+
+  stroke(bgColor);
+  strokeWeight(3);
+
+  for (let i = 0; i < points.length; i++) {
+    if (i != points.length - 1) {
+      line(points[i].x, points[i].y, points[i + 1].x, height - bottomPadding);
+      line(points[i].x, height - bottomPadding, points[i + 1].x, points[i + 1].y);
     }
+  }
 
-    vertex(width - sidePadding / 2, height - bottomPadding);
+  stroke("black");
+  strokeWeight(8);
 
-    endShape();
-
-    stroke(bgColor);
-    strokeWeight(3);
-
-    for (let i = 0; i < points.length; i++) {
-        if (i != points.length - 1) {
-            line(points[i].x, points[i].y, points[i + 1].x, height - bottomPadding);
-            line(points[i].x, height - bottomPadding, points[i + 1].x, points[i + 1].y);
-        }
+  for (let i = 0; i < points.length; i++) {
+    if (points[i].count !== 0) {
+      point(points[i].x, points[i].y);
     }
+  }
 
-    stroke("black");
-    strokeWeight(8);
+  strokeWeight(1);
+  textSize(22);
+  fill("black");
+  textFont(fontRegular);
+  textAlign(CENTER, CENTER);
+  text("12 AM", width - sidePadding, height - 30);
+  text("12 PM", width / 2, height - 30);
+  text("12 AM", sidePadding, height - 30);
 
-    for (let i = 0; i < points.length; i++) {
-        if (points[i].count !== 0) {
-            point(points[i].x, points[i].y);
-        }
-    }
-
-    strokeWeight(1);
-    textSize(22);
-    fill("black");
-    textFont(fontRegular);
-    textAlign(CENTER, CENTER);
-    text("12 AM", width - sidePadding, height - 30);
-    text("12 PM", width / 2, height - 30);
-    text("12 AM", sidePadding, height - 30);
-
-    // saveCanvas("output1.png");
+  // saveCanvas("output1.png");
 }
 
 function aggregateByHour(tableObj) {
-    let hours = new Array(24).fill(0);
+  let hours = new Array(24).fill(0);
 
-    let dataProc = _.chain(tableObj)
-        .countBy((d) => moment(d.dateTime, "MM/DD/YYYY hh:mm:ss").format("HH"))
-        .map((count, hour) => ({ hour, count }))
-        .value();
+  let dataProc = _.chain(tableObj)
+    .countBy((d) => moment(d.dateTime, "MM/DD/YYYY hh:mm:ss").format("HH"))
+    .map((count, hour) => ({ hour, count }))
+    .sortBy("hour")
+    .value();
 
-    dataProc.forEach((d) => {
-        hours[+d.hour] = d.count;
-    });
+  dataProc.forEach((d) => {
+    hours[+d.hour] = d.count;
+  });
 
-    let finalData = _.map(hours, (count, hour) => {
-        return { hour, count };
-    });
-
-    return finalData;
+  return hours;
 }
